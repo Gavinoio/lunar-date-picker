@@ -184,17 +184,23 @@ interface DateResult {
     day: number           // 公历日
     week: number          // 星期（0-6，0=周日）
     weekCn: string        // 星期中文（'周一'）
+    astro: string         // 星座（'白羊座'）
   }
   lunar: {
     year: number          // 农历年
     month: number         // 农历月
     day: number           // 农历日
     isLeap: boolean       // 是否闰月
-    yearCn: string        // 农历年中文（'甲子年'）
+    yearCn: string        // 农历年干支（'甲子'）
     monthCn: string       // 农历月中文（'正月'）
     dayCn: string         // 农历日中文（'初一'）
     animal: string        // 生肖（'鼠'）
+    gzMonth: string       // 干支月（'丙寅'）
+    gzDay: string         // 干支日（'甲子'）
+    isTerm: boolean       // 是否节气
+    term: string | null   // 节气名称（'立春'）
   }
+  isToday: boolean        // 是否今天
 }
 ```
 
