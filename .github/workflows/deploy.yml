@@ -23,16 +23,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install root dependencies
+      - name: Install dependencies
         run: npm install
-
-      - name: Install demo dependencies
-        run: npm install
-        working-directory: examples/vue-demo
 
       - name: Build demo
-        run: npm run build
-        working-directory: examples/vue-demo
+        run: node_modules/.bin/vite build --config examples/vue-demo/vite.config.ts
 
       - uses: actions/upload-pages-artifact@v3
         with:
