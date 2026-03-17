@@ -23,8 +23,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm install
+      - name: Remove lock file and install dependencies
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Build demo
         run: node_modules/.bin/vite build --config examples/vue-demo/vite.config.ts
