@@ -1,0 +1,231 @@
+/* lunar-date-picker 核心样式 */
+
+:root {
+  --ldp-z-overlay: 2000;
+  --ldp-z-mask: 998;
+  --ldp-z-layout: 999;
+  --ldp-mask-bg: rgba(0, 0, 0, 0.5);
+  --ldp-transition-duration: 0.3s;
+  --ldp-item-height: 44px;
+}
+
+.ldp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ldp-z-overlay);
+}
+
+.ldp-mask {
+  z-index: var(--ldp-z-mask);
+  position: fixed;
+  inset: 0;
+  background-color: var(--ldp-mask-bg);
+  transition: opacity 0.2s ease;
+}
+
+.ldp-mask.ldp-leave {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ldp-layout {
+  z-index: var(--ldp-z-layout);
+  box-sizing: border-box;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 16px;
+  background: #fff;
+  text-align: center;
+  backface-visibility: hidden;
+  transform: translate3d(0, 100%, 0);
+  transition: transform var(--ldp-transition-duration) ease-out;
+}
+
+.ldp-layout.ldp-show {
+  transform: translate3d(0, 0, 0);
+}
+
+/* 头部 */
+.ldp-header {
+  display: flex;
+  border-bottom: 1px solid #eaeaea;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  line-height: 32px;
+  padding: 0 15px;
+  height: 48px;
+}
+
+.ldp-cancel {
+  color: #999;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ldp-confirm {
+  height: 28px;
+  color: #fff;
+  border-radius: 18px;
+  background: var(--ldp-primary, #d03f3f);
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 28px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 公历/农历切换按钮组 */
+.ldp-btn-group {
+  display: flex;
+  border-radius: 40px;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+.ldp-btn {
+  flex-shrink: 0;
+  color: var(--ldp-primary, #d03f3f);
+  background-color: transparent;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+  width: 72px;
+  border: 1px solid var(--ldp-primary, #d03f3f);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ldp-btn.active {
+  background-color: var(--ldp-primary, #d03f3f);
+  color: #fff;
+}
+
+.ldp-solar-btn {
+  border-radius: 40px 0 0 40px;
+}
+
+.ldp-lunar-btn {
+  border-radius: 0 40px 40px 0;
+}
+
+/* 滚动容器 */
+.ldp-container {
+  height: 264px;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+
+/* 上下渐变遮罩 */
+.ldp-container::before {
+  z-index: 3;
+  position: absolute;
+  content: '';
+  inset: 0;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4)),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4));
+  background-position: top, bottom;
+  background-size: 100% 110px;
+  background-repeat: no-repeat;
+  transform: translateZ(0);
+  pointer-events: none;
+}
+
+/* 中间选中高亮条 */
+.ldp-container::after {
+  content: '';
+  width: 96%;
+  height: var(--ldp-item-height);
+  background-color: #f6f6f6;
+  border-radius: 4px;
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* 每一列 */
+.ldp-wrapper {
+  width: 100%;
+  z-index: 2;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ldp-wrapper-ul {
+  list-style: none;
+  padding: 110px 0;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  font-size: 18px;
+}
+
+.ldp-row {
+  text-align: center;
+  line-height: var(--ldp-item-height);
+  height: var(--ldp-item-height);
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* date-picker 底部农历切换 */
+.ldp-footer {
+  position: relative;
+  background-color: #fff;
+  width: 100%;
+  height: var(--ldp-item-height);
+  border-top: 0.5px solid #eaeaea;
+}
+
+.ldp-lunar-toggle {
+  float: right;
+  display: flex;
+  align-items: center;
+  height: var(--ldp-item-height);
+  padding-right: 15px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ldp-lunar-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #dfdfdf;
+  margin-right: 8px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.ldp-lunar-toggle.active .ldp-lunar-circle {
+  border-color: var(--ldp-primary, #d03f3f);
+  background-color: var(--ldp-primary, #d03f3f);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath fill='white' d='M4 9l3.5 3.5L14 6'/%3E%3C/svg%3E");
+  background-size: 18px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.ldp-lunar-toggle span {
+  font-size: 17px;
+  color: #111;
+  line-height: var(--ldp-item-height);
+}

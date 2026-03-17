@@ -1,0 +1,26 @@
+# 源代码
+src/
+examples/
+
+# 配置文件
+.eslintrc.js
+.prettierrc
+tsconfig.json
+vite.config.ts
+
+# 开发文件
+node_modules/
+.git/
+.gitignore
+.npmignore
+
+# 测试文件
+*.test.ts
+*.spec.ts
+__tests__/
+
+# 其他
+.DS_Store
+*.log
+.vscode/
+.idea/
