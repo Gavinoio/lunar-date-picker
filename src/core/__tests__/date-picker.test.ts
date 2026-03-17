@@ -59,18 +59,20 @@ describe('DatePickerCore', () => {
     expect(result.solar.day).toBe(15)
   })
 
-  it('应该支持事件监听', (done) => {
+  it('应该支持事件监听', () => {
     picker = new DatePickerCore(container, {
       defaultDate: new Date(2024, 0, 1)
     })
 
+    let called = false
     picker.on('change', (result) => {
       expect(result).toBeDefined()
-      done()
+      called = true
     })
 
     // 触发变化
     picker.setDate(new Date(2024, 1, 1))
+    expect(called).toBe(true)
   })
 
   it('应该正确销毁', () => {

@@ -113,9 +113,9 @@ function onConfirm(result) {
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `show` | `boolean` | `false` | 是否显示选择器（支持 v-model） |
-| `value` | `Date` | - | 当前选中的日期（支持 v-model） |
+| `value` | `Date` | `new Date()` | 当前选中的日期（支持 v-model） |
 | `showLunar` | `boolean` | `true` | 是否显示农历切换按钮 |
-| `endYear` | `number` | `当前年份 + 10` | 年份选择的最大年份 |
+| `endYear` | `number` | `当前年份` | 年份选择的最大年份 |
 | `color` | `string` | `'#D03F3F'` | 主题色 |
 | `confirmText` | `string` | `'确定'` | 确认按钮文字 |
 | `cancelText` | `string` | `'取消'` | 取消按钮文字 |
@@ -135,12 +135,12 @@ function onConfirm(result) {
 | 属性 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `show` | `boolean` | `false` | 是否显示选择器（支持 v-model） |
-| `value` | `Date` | - | 当前选中的日期时间（支持 v-model） |
+| `value` | `Date` | `new Date()` | 当前选中的日期时间（支持 v-model） |
 | `type` | `0 \| 1 \| 2` | `1` | 日历类型（见下方说明） |
 | `timeFields` | `TimeField[]` | `['hour', 'minute']` | 要显示的时间字段 |
 | `showUnit` | `boolean` | `true` | 是否显示单位文字（年、月、日、时、分、秒） |
 | `unclearFirst` | `boolean` | `false` | "不清楚"选项是否放在时间列的最前面 |
-| `endYear` | `number` | `当前年份 + 10` | 年份选择的最大年份 |
+| `endYear` | `number` | `当前年份` | 年份选择的最大年份 |
 | `color` | `string` | `'#D03F3F'` | 主题色 |
 | `confirmText` | `string` | `'确定'` | 确认按钮文字 |
 | `cancelText` | `string` | `'取消'` | 取消按钮文字 |

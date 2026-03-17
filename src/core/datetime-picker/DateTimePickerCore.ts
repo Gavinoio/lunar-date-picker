@@ -42,7 +42,7 @@ export class DateTimePickerCore {
       timeFields: ['hour', 'minute'], // 默认显示时分
       showUnit: true,
       unclearFirst: false,
-      endYear: new Date().getFullYear() + 10,
+      endYear: new Date().getFullYear(),
       primaryColor: '#D03F3F',
       onChange: () => {},
       onConfirm: () => {},

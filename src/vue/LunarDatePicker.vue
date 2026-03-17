@@ -23,8 +23,9 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
+  value: () => new Date(),
   showLunar: true,
-  endYear: () => new Date().getFullYear() + 10,
+  endYear: () => new Date().getFullYear(),
   color: '#D03F3F',
   confirmText: '确定',
   cancelText: '取消'
@@ -44,7 +45,7 @@ function initCore() {
   core?.destroy()
   isLunar.value = false
   core = new DatePickerCore(containerRef.value, {
-    defaultDate: props.value || new Date(),
+    defaultDate: props.value,
     showLunar: props.showLunar,
     endYear: props.endYear,
     primaryColor: props.color,

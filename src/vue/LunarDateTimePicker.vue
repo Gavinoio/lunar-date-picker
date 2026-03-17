@@ -27,11 +27,12 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
+  value: () => new Date(),
   type: 1,
   timeFields: () => ['hour', 'minute'],
   showUnit: true,
   unclearFirst: false,
-  endYear: () => new Date().getFullYear() + 10,
+  endYear: () => new Date().getFullYear(),
   color: '#D03F3F',
   confirmText: '确定',
   cancelText: '取消'
@@ -50,7 +51,7 @@ function initCore() {
   if (!containerRef.value) return
   core?.destroy()
   core = new DateTimePickerCore(containerRef.value, {
-    defaultDate: props.value || new Date(),
+    defaultDate: props.value,
     type: props.type,
     timeFields: props.timeFields,
     showUnit: props.showUnit,

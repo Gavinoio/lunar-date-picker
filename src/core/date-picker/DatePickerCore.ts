@@ -44,7 +44,7 @@ export class DatePickerCore {
     this.options = {
       defaultDate: d,
       showLunar: options.showLunar ?? true,
-      endYear: options.endYear || new Date().getFullYear() + 10,
+      endYear: options.endYear || new Date().getFullYear(),
       primaryColor: options.primaryColor || '#D03F3F',
       onChange: options.onChange || (() => {}),
       onConfirm: options.onConfirm || (() => {}),
