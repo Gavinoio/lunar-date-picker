@@ -14,6 +14,7 @@ export interface SolarDate {
   day: number
   week: number // 0-6，0=周日
   weekCn: string // '周一'
+  astro: string // 星座
 }
 
 export interface LunarDate {
@@ -25,12 +26,17 @@ export interface LunarDate {
   monthCn: string // '正月'
   dayCn: string // '初一'
   animal: string // '鼠'
+  gzMonth: string // 干支月
+  gzDay: string // 干支日
+  isTerm: boolean // 是否节气
+  term: string | null // 节气名称
 }
 
 export interface DateResult {
   date: Date
   solar: SolarDate
   lunar: LunarDate
+  isToday: boolean
 }
 
 export interface DateTimeResult extends DateResult {

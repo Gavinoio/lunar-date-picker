@@ -509,7 +509,8 @@ export class DateTimePickerCore {
         month: info.cMonth,
         day: info.cDay,
         week: info.nWeek,
-        weekCn: info.ncWeek
+        weekCn: info.ncWeek,
+        astro: info.astro
       },
       lunar: {
         year: info.lYear,
@@ -519,8 +520,13 @@ export class DateTimePickerCore {
         yearCn: info.gzYear,
         monthCn: info.IMonthCn,
         dayCn: info.IDayCn,
-        animal: info.Animal
-      }
+        animal: info.Animal,
+        gzMonth: info.gzMonth,
+        gzDay: info.gzDay,
+        isTerm: info.isTerm,
+        term: info.Term
+      },
+      isToday: info.isToday
     }
 
     // 根据 timeFields 添加时间字段
