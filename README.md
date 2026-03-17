@@ -18,12 +18,23 @@
 
 ## 在线演示
 
-[查看在线演示](https://github.com/Gavinoio/lunar-date-picker/tree/main/examples/vue-demo)
+[🚀 查看在线演示](https://gavinoio.github.io/lunar-date-picker/)
 
 ## 安装
 
+使用 npm：
 ```bash
 npm install lunar-date-picker
+```
+
+使用 yarn：
+```bash
+yarn add lunar-date-picker
+```
+
+使用 pnpm：
+```bash
+pnpm add lunar-date-picker
 ```
 
 ## Vue 3 使用
