@@ -122,7 +122,7 @@ export class DatePickerCore {
 
   /** 生成公历日期列表（显示格式：1日周一、2日周二、今天） */
   private buildSolarDayItems(year: number, month: number): string {
-    const dayCount = LunarCalendar.solarDays(year, month)
+    const dayCount = LunarCalendar.solarDays(year, month + 1)
     const items: string[] = []
     const todayY = this.today.getFullYear()
     const todayM = this.today.getMonth()
@@ -264,7 +264,7 @@ export class DatePickerCore {
   /** 刷新公历日期列（当年份或月份变化时调用） */
   private refreshDayCol(): void {
     const { year, month, day } = this.state
-    const dayCount = LunarCalendar.solarDays(year, month)
+    const dayCount = LunarCalendar.solarDays(year, month + 1)
     const el = this.container.querySelector('.ldp-day-wrapper .ldp-wrapper-ul')!
     el.innerHTML = this.buildSolarDayItems(year, month)
 
