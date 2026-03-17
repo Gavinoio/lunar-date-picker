@@ -8,12 +8,10 @@ import type {
   DatePickerCancelHandler
 } from './types'
 
-// 周几的中文简写
-const WEEK_CN = ['日', '一', '二', '三', '四', '五', '六']
-
 // 常量定义
-const ITEM_HEIGHT = 44 // 每个选项的高度（px）
-const START_YEAR = 1910 // 起始年份
+const WEEK_CN = ['日', '一', '二', '三', '四', '五', '六']
+const ITEM_HEIGHT = 44
+const START_YEAR = 1910
 
 type EventName = 'change' | 'confirm' | 'cancel'
 

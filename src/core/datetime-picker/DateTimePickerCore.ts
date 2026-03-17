@@ -500,7 +500,10 @@ export class DateTimePickerCore {
       throw new Error('Invalid date conversion')
     }
 
-    const date = new Date(info.cYear, info.cMonth - 1, info.cDay)
+    const hour = typeof s.hour === 'number' ? s.hour : 0
+    const minute = typeof s.minute === 'number' ? s.minute : 0
+    const second = typeof s.second === 'number' ? s.second : 0
+    const date = new Date(info.cYear, info.cMonth - 1, info.cDay, hour, minute, second)
 
     const result: DateTimeResult = {
       date,
