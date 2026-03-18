@@ -56,15 +56,32 @@ export class DateTimePickerCore {
     const hasMinute = this.options.timeFields.includes('minute')
     const hasSecond = this.options.timeFields.includes('second')
 
-    this.state = {
-      year: d.getFullYear(),
-      month: d.getMonth() + 1,
-      day: d.getDate(),
-      hour: hasHour ? (this.options.unclearFirst ? '不清楚' : d.getHours()) : undefined,
-      minute: hasMinute ? (this.options.unclearFirst ? '不清楚' : d.getMinutes()) : undefined,
-      second: hasSecond ? d.getSeconds() : undefined,
-      isLeap: false,
-      calendarType
+    // 初始化状态
+    if (calendarType === 'lunar') {
+      // type=2 默认农历，需要先转换
+      const lunar = LunarCalendar.solar2lunar(d.getFullYear(), d.getMonth() + 1, d.getDate())
+      this.state = {
+        year: lunar?.lYear || d.getFullYear(),
+        month: lunar?.lMonth || d.getMonth() + 1,
+        day: lunar?.lDay || d.getDate(),
+        hour: hasHour ? (this.options.unclearFirst ? '不清楚' : d.getHours()) : undefined,
+        minute: hasMinute ? (this.options.unclearFirst ? '不清楚' : d.getMinutes()) : undefined,
+        second: hasSecond ? d.getSeconds() : undefined,
+        isLeap: lunar?.isLeap || false,
+        calendarType: 'lunar'
+      }
+    } else {
+      // type=0 或 type=1，默认公历
+      this.state = {
+        year: d.getFullYear(),
+        month: d.getMonth() + 1,
+        day: d.getDate(),
+        hour: hasHour ? (this.options.unclearFirst ? '不清楚' : d.getHours()) : undefined,
+        minute: hasMinute ? (this.options.unclearFirst ? '不清楚' : d.getMinutes()) : undefined,
+        second: hasSecond ? d.getSeconds() : undefined,
+        isLeap: false,
+        calendarType: 'solar'
+      }
     }
 
     this.render()
@@ -104,9 +121,30 @@ export class DateTimePickerCore {
    * @param leapMonth 闰月月份（仅农历月份时使用）
    */
   private renderItem(start: number, end: number, type: string, leapMonth = 0): string {
-    let leapFlag = leapMonth !== 0
     const items: string[] = []
 
+    if (type === 'month' && this.state.calendarType === 'lunar') {
+      // 农历月份特殊处理，使用索引作为 data-value
+      const count = leapMonth > 0 ? 12 : 11
+      for (let i = 0; i <= count; i++) {
+        let label: string
+        if (leapMonth > 0) {
+          if (i < leapMonth) {
+            label = LunarCalendar.toChinaMonth(i + 1)
+          } else if (i === leapMonth) {
+            label = '闰' + LunarCalendar.toChinaMonth(leapMonth)
+          } else {
+            label = LunarCalendar.toChinaMonth(i)
+          }
+        } else {
+          label = LunarCalendar.toChinaMonth(i + 1)
+        }
+        items.push(`<li data-value="${i}" class="ldp-row">${label}</li>`)
+      }
+      return items.join('')
+    }
+
+    // 其他类型的列表项
     for (let i = start; i <= end; i++) {
       let text: string | number = i
       let unit = ''
@@ -114,18 +152,8 @@ export class DateTimePickerCore {
       if (type === 'year') unit = '年'
 
       if (type === 'month') {
-        if (this.state.calendarType === 'lunar') {
-          if (leapMonth === i - 1 && leapFlag) {
-            i = i - 1
-            text = '闰' + LunarCalendar.toChinaMonth(i)
-            leapFlag = false
-          } else {
-            text = LunarCalendar.toChinaMonth(i)
-          }
-          unit = ''
-        } else {
-          unit = '月'
-        }
+        // 公历月份
+        unit = '月'
       }
 
       if (type === 'day') {
@@ -204,11 +232,33 @@ export class DateTimePickerCore {
 
   private initScrollers(): void {
     const s = this.state
-    const days = LunarCalendar.solarDays(s.year, s.month)
 
-    this.renderYearCol()
-    this.renderMonthCol()
-    this.renderDayCol(days)
+    // 根据日历类型计算天数和渲染列
+    let days: number
+    let monthPos: number
+
+    if (s.calendarType === 'lunar') {
+      // 农历模式
+      const leapMonth = LunarCalendar.leapMonth(s.year)
+      this.renderYearCol()
+      this.renderMonthCol(leapMonth)
+
+      days = s.isLeap ? LunarCalendar.leapDays(s.year) : LunarCalendar.monthDays(s.year, s.month)
+      this.renderDayCol(days)
+
+      // 计算农历月份的滚动位置（索引）
+      monthPos = s.month - 1
+      if (leapMonth > 0 && (s.month > leapMonth || s.isLeap)) {
+        monthPos = s.month // 闰月或闰月之后，索引+1
+      }
+    } else {
+      // 公历模式
+      days = LunarCalendar.solarDays(s.year, s.month)
+      this.renderYearCol()
+      this.renderMonthCol()
+      this.renderDayCol(days)
+      monthPos = s.month - 1
+    }
 
     // 根据 timeFields 渲染时间列
     if (this.options.timeFields.includes('hour')) this.renderHourCol()
@@ -221,7 +271,6 @@ export class DateTimePickerCore {
 
     const h = this.itemHeight
     const yearPos = s.year - START_YEAR
-    const monthPos = s.month - 1
     const dayPos = s.day - 1
     const hourPos = this.options.unclearFirst ? 0 : typeof s.hour === 'number' ? s.hour : 0
     const minutePos = this.options.unclearFirst ? 0 : typeof s.minute === 'number' ? s.minute : 0
@@ -317,24 +366,37 @@ export class DateTimePickerCore {
     const item = node[index] as HTMLElement
     this.state.year = parseInt(item.dataset.value!)
 
-    const days = LunarCalendar.solarDays(this.state.year, this.state.month)
-    const monthPos = this.state.month - 1
-    let dayPos = this.state.day - 1
+    let days: number
+    let monthPos: number
 
     if (this.state.calendarType === 'lunar') {
+      // 农历模式
       const leapMonth = LunarCalendar.leapMonth(this.state.year)
       if (leapMonth !== 0) {
         this.renderMonthCol(leapMonth)
-        if (this.state.month > leapMonth || this.state.isLeap) {
-          // 修正闰月及以后月份滚动位置
-        }
       } else {
         this.renderMonthCol()
       }
+
+      // 计算农历月份的滚动位置
+      monthPos = this.state.month - 1
+      if (leapMonth > 0 && (this.state.month > leapMonth || this.state.isLeap)) {
+        monthPos = this.state.month
+      }
+
+      // 计算农历日期天数
+      days = this.state.isLeap
+        ? LunarCalendar.leapDays(this.state.year)
+        : LunarCalendar.monthDays(this.state.year, this.state.month)
+    } else {
+      // 公历模式
+      days = LunarCalendar.solarDays(this.state.year, this.state.month)
+      monthPos = this.state.month - 1
     }
 
     this.renderDayCol(days)
 
+    let dayPos = this.state.day - 1
     if (this.state.day > days) {
       this.state.day = days
       dayPos = days - 1
@@ -352,20 +414,34 @@ export class DateTimePickerCore {
 
   private onMonthChange(index: number, node: NodeListOf<ChildNode>): void {
     const item = node[index] as HTMLElement
-    this.state.month = parseInt(item.dataset.value!)
+    const val = parseInt(item.dataset.value!)
 
-    const isLeapMonth = item.textContent?.includes('闰') ?? false
-    this.state.isLeap = false
+    let days: number
 
-    let days = LunarCalendar.solarDays(this.state.year, this.state.month)
-
-    if (this.state.calendarType === 'lunar') {
+    if (this.state.calendarType === 'solar') {
+      // 公历模式：val 就是月份（1-based）
+      this.state.month = val
+      days = LunarCalendar.solarDays(this.state.year, this.state.month)
+    } else {
+      // 农历模式：val 是索引，需要转换为实际月份
       const leapMonth = LunarCalendar.leapMonth(this.state.year)
-      if (leapMonth !== 0 && leapMonth === this.state.month && isLeapMonth) {
-        days = LunarCalendar.leapDays(this.state.year)
+      const isLeapMonth = item.textContent?.includes('闰') ?? false
+
+      if (leapMonth > 0 && val === leapMonth && isLeapMonth) {
+        // 选中的是闰月
+        this.state.month = leapMonth
         this.state.isLeap = true
+        days = LunarCalendar.leapDays(this.state.year)
+      } else if (leapMonth > 0 && val > leapMonth) {
+        // 闰月之后的月份
+        this.state.month = val
+        this.state.isLeap = false
+        days = LunarCalendar.monthDays(this.state.year, val)
       } else {
-        days = LunarCalendar.monthDays(this.state.year, this.state.month)
+        // 闰月之前的月份或没有闰月
+        this.state.month = val + 1
+        this.state.isLeap = false
+        days = LunarCalendar.monthDays(this.state.year, val + 1)
       }
     }
 

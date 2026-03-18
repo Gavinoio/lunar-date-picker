@@ -158,6 +158,9 @@ export class LunarCalendar {
     const cm = objDate.getMonth() + 1
     const cd = objDate.getDate()
 
+    // 验证日期是否被 Date 对象自动修正（如 2024-02-30 会变成 2024-03-01）
+    if (cy !== y || cm !== m || cd !== d) return null
+
     let offset =
       (Date.UTC(objDate.getFullYear(), objDate.getMonth(), objDate.getDate()) -
         Date.UTC(1900, 0, 31)) /

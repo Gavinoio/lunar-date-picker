@@ -147,7 +147,9 @@ export class DatePickerCore {
       const solar = LunarCalendar.lunar2solar(lYear, lMonth, d, isLeap)
       if (!solar) continue
       const isToday = solar.cYear === todayY && solar.cMonth - 1 === todayM && solar.cDay === todayD
-      const label = isToday ? '今天' : `${LunarCalendar.toChinaDay(d)}周${WEEK_CN[solar.nWeek]}`
+      // solar.nWeek 是 1-7（周一到周日），需要转换为 0-6 的索引
+      const weekIndex = solar.nWeek === 7 ? 0 : solar.nWeek
+      const label = isToday ? '今天' : `${LunarCalendar.toChinaDay(d)}周${WEEK_CN[weekIndex]}`
       items.push(`<li data-value="${d}" class="ldp-row">${label}</li>`)
     }
     return items.join('')

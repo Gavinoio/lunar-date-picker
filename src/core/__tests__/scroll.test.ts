@@ -68,14 +68,12 @@ describe('Scroll', () => {
   })
 
   it('应该支持回调函数', () => {
-    let called = false
     scroll = new Scroll(container, {
       step: true,
       defaultPlace: 0,
       callback: (result) => {
         expect(result).toBeDefined()
         expect(result.index).toBeGreaterThanOrEqual(0)
-        called = true
       }
     })
     expect(scroll).toBeDefined()

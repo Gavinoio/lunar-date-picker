@@ -3,44 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lunar Date Picker - Vue Demo</title>
+  <title>Lunar Date Picker</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --background: #ffffff;
+      --foreground: #09090b;
+      --muted: #f4f4f5;
+      --muted-foreground: #71717a;
+      --border: #e4e4e7;
+      --card: #ffffff;
+      --card-foreground: #09090b;
+      --primary: #18181b;
+      --primary-foreground: #fafafa;
+      --radius: 8px;
+      --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    .demo-container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h1 { font-size: 24px; margin-bottom: 20px; color: #333; }
-    .demo-section { margin-bottom: 30px; }
-    .demo-section h2 { font-size: 18px; margin-bottom: 10px; color: #666; }
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      background: #d03f3f;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-    button:active { opacity: 0.8; }
-    .result {
-      padding: 10px;
-      background: #f9f9f9;
-      border-radius: 6px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      padding-top: 80px;
+      padding-bottom: 48px;
       font-size: 14px;
-      color: #666;
-      margin-top: 10px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--background);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .header-content {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      margin-bottom: 2px;
+    }
+
+    .header-text p {
+      color: var(--muted-foreground);
+      font-size: 12px;
+    }
+
+    .demo-container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .demo-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .component-section {
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      padding: 16px 20px;
+      background: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--foreground);
+      margin-bottom: 4px;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--muted-foreground);
+    }
+
+    .demo-item {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .demo-item:last-child {
+      border-bottom: none;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-info {
+      flex: 1;
+    }
+
+    .card-label {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      background: var(--muted);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--muted-foreground);
+      line-height: 1.5;
+    }
+
+    .demo-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 40px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: opacity 0.15s;
+      font-family: inherit;
+    }
+
+    .demo-button:hover {
+      opacity: 0.88;
+    }
+
+    .demo-button:active {
+      opacity: 0.75;
+    }
+
+    .result-box {
+      margin-top: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .result-header:hover {
+      background: #e9e9eb;
+    }
+
+    .result-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted-foreground);
+    }
+
+    .result-toggle {
+      font-size: 12px;
+      color: var(--muted-foreground);
+      transition: transform 0.2s;
+    }
+
+    .result-toggle.expanded {
+      transform: rotate(180deg);
+    }
+
+    .result-content {
+      padding: 14px;
+      background: var(--background);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .result-content pre {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--foreground);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .github-link {
+      max-width: 640px;
+      margin: 40px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .github-link a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted-foreground);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .github-link a:hover {
+      color: var(--foreground);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding-top: 72px;
+      }
+
+      .header-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 20px;
+      }
+
+      .header-text h1 {
+        font-size: 16px;
+      }
+
+      .demo-container {
+        padding: 20px 16px;
+      }
     }
   </style>
 </head>
