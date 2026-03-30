@@ -12,7 +12,7 @@
     "declarationDir": "./dist",
     "outDir": "./dist",
     "rootDir": "./src",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

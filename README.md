@@ -216,7 +216,88 @@ interface DateTimeResult extends DateResult {
 
 ## React 使用
 
-> React 版本正在开发中，敬请期待...
+### LunarDatePicker（日期选择器）
+
+```tsx
+import { useState } from 'react'
+import { LunarDatePicker } from 'lunar-date-picker/react'
+
+function App() {
+  const [show, setShow] = useState(false)
+  const [date, setDate] = useState(new Date())
+
+  function onConfirm(result) {
+    console.log('选中日期:', result)
+  }
+
+  return (
+    <>
+      <button onClick={() => setShow(true)}>选择日期</button>
+
+      <LunarDatePicker
+        show={show}
+        value={date}
+        showLunar={true}
+        endYear={2030}
+        color="#D03F3F"
+        confirmText="确定"
+        cancelText="取消"
+        onUpdateShow={setShow}
+        onUpdateValue={setDate}
+        onConfirm={onConfirm}
+        onCancel={() => console.log('取消')}
+        onChange={(result) => console.log('变化:', result)}
+      />
+    </>
+  )
+}
+```
+
+### LunarDateTimePicker（日期时间选择器）
+
+```tsx
+import { useState } from 'react'
+import { LunarDateTimePicker } from 'lunar-date-picker/react'
+
+function App() {
+  const [show, setShow] = useState(false)
+  const [date, setDate] = useState(new Date())
+
+  function onConfirm(result) {
+    console.log('选中日期时间:', result)
+  }
+
+  return (
+    <>
+      <button onClick={() => setShow(true)}>选择日期时间</button>
+
+      <LunarDateTimePicker
+        show={show}
+        value={date}
+        type={1}
+        timeFields={['hour', 'minute']}
+        showUnit={true}
+        unclearFirst={false}
+        endYear={2030}
+        color="#D03F3F"
+        confirmText="确定"
+        cancelText="取消"
+        onUpdateShow={setShow}
+        onUpdateValue={setDate}
+        onConfirm={onConfirm}
+      />
+    </>
+  )
+}
+```
+
+### React Props 说明
+
+React 组件的 Props 与 Vue 组件基本一致，主要区别：
+
+- Vue 使用 `v-model:show` 和 `v-model:value`，React 使用 `show`/`onUpdateShow` 和 `value`/`onUpdateValue`
+- Vue 使用 `@confirm`、`@cancel`、`@change`，React 使用 `onConfirm`、`onCancel`、`onChange`
+- React 组件的属性使用驼峰命名（如 `showLunar`），Vue 组件使用短横线命名（如 `show-lunar`）
 
 ## 核心 API
 

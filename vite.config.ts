@@ -4,6 +4,9 @@ import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
 
 export default defineConfig({
+  esbuild: {
+    jsx: 'automatic'
+  },
   plugins: [
     vue(),
     dts({
@@ -17,7 +20,8 @@ export default defineConfig({
     lib: {
       entry: {
         core: resolve(__dirname, 'src/core/index.ts'),
-        vue: resolve(__dirname, 'src/vue/index.ts')
+        vue: resolve(__dirname, 'src/vue/index.ts'),
+        react: resolve(__dirname, 'src/react/index.ts')
       },
       formats: ['es', 'cjs'],
       fileName: (format, entryName) => {
@@ -26,10 +30,13 @@ export default defineConfig({
       }
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', 'react', 'react-dom', 'react/jsx-runtime'],
       output: {
         globals: {
-          vue: 'Vue'
+          vue: 'Vue',
+          react: 'React',
+          'react-dom': 'ReactDOM',
+          'react/jsx-runtime': 'ReactJSXRuntime'
         },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'style.css') {

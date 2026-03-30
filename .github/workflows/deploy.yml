@@ -23,17 +23,33 @@ jobs:
         with:
           node-version: 20
 
-      - name: Remove lock file and install dependencies
-        run: |
-          rm -f package-lock.json
-          npm install
+      - name: Install root dependencies
+        run: npm install
 
-      - name: Build demo
-        run: node_modules/.bin/vite build --config examples/vue-demo/vite.config.ts
+      - name: Install Vue demo dependencies
+        run: cd examples/vue-demo && npm install
+
+      - name: Install React demo dependencies
+        run: cd examples/react-demo && npm install
+
+      - name: Build Vue demo
+        run: cd examples/vue-demo && npm run build
+
+      - name: Build React demo
+        run: cd examples/react-demo && npm run build
+
+      - name: Prepare deployment directory
+        run: |
+          mkdir -p deploy
+          cp examples/index.html deploy/
+          mkdir -p deploy/vue
+          cp -r examples/vue-demo/dist/* deploy/vue/
+          mkdir -p deploy/react
+          cp -r examples/react-demo/dist/* deploy/react/
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: examples/vue-demo/dist
+          path: deploy
 
   deploy:
     needs: build

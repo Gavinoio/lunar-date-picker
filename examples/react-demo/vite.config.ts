@@ -1,14 +1,14 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [react()],
   root: __dirname,
-  base: '/lunar-date-picker/vue/',
+  base: '/lunar-date-picker/react/',
   build: {
     outDir: resolve(__dirname, 'dist'),
     emptyOutDir: true
