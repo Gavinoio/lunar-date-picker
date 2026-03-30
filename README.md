@@ -18,9 +18,8 @@
 
 ## 在线演示
 
-- [🚀 查看所有演示](https://gavinoio.github.io/lunar-date-picker/) - 选择 Vue 或 React 版本
-- [Vue 3 演示](https://gavinoio.github.io/lunar-date-picker/vue/)
-- [React 演示](https://gavinoio.github.io/lunar-date-picker/react/)
+- [Vue 3 版本](https://gavinoio.github.io/lunar-date-picker/vue/)
+- [React 版本](https://gavinoio.github.io/lunar-date-picker/react/)
 
 ## 安装
 
