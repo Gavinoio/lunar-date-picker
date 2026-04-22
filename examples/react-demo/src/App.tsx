@@ -50,8 +50,8 @@ export default function App() {
         <div className="header-content">
           <div className="header-icon">🌙</div>
           <div className="header-text">
-            <h1>Lunar Date Picker</h1>
-            <p>移动端公历/农历日期选择器 · React</p>
+            <h1>Lunar Date Picker （React）</h1>
+            <p>移动端公历/农历日期选择器</p>
           </div>
         </div>
       </div>
@@ -74,7 +74,9 @@ export default function App() {
                     <p className="card-desc">支持公历/农历切换，显示时分</p>
                   </div>
                 </div>
-                <button className="demo-button" onClick={() => setShow1(true)}>选择日期时间</button>
+                <button className="demo-button" onClick={() => setShow1(true)}>
+                  选择日期时间
+                </button>
                 <ResultBox result={result1} />
               </div>
               <LunarDateTimePicker
@@ -95,7 +97,9 @@ export default function App() {
                     <p className="card-desc">打开时默认显示农历日期</p>
                   </div>
                 </div>
-                <button className="demo-button" onClick={() => setShow2(true)}>选择农历日期</button>
+                <button className="demo-button" onClick={() => setShow2(true)}>
+                  选择农历日期
+                </button>
                 <ResultBox result={result2} />
               </div>
               <LunarDateTimePicker
@@ -116,7 +120,9 @@ export default function App() {
                     <p className="card-desc">不显示公历/农历切换按钮</p>
                   </div>
                 </div>
-                <button className="demo-button" onClick={() => setShow5(true)}>选择公历日期</button>
+                <button className="demo-button" onClick={() => setShow5(true)}>
+                  选择公历日期
+                </button>
                 <ResultBox result={result5} />
               </div>
               <LunarDateTimePicker
@@ -137,7 +143,9 @@ export default function App() {
                     <p className="card-desc">显示时、分、秒三个时间字段</p>
                   </div>
                 </div>
-                <button className="demo-button" onClick={() => setShow6(true)}>选择精确时间</button>
+                <button className="demo-button" onClick={() => setShow6(true)}>
+                  选择精确时间
+                </button>
                 <ResultBox result={result6} />
               </div>
               <LunarDateTimePicker
@@ -170,7 +178,9 @@ export default function App() {
                     <p className="card-desc">支持公历/农历切换</p>
                   </div>
                 </div>
-                <button className="demo-button" onClick={() => setShow3(true)}>选择日期</button>
+                <button className="demo-button" onClick={() => setShow3(true)}>
+                  选择日期
+                </button>
                 <ResultBox result={result3} />
               </div>
               <LunarDatePicker
@@ -190,7 +200,9 @@ export default function App() {
                     <p className="card-desc">不显示农历切换，纯公历日期</p>
                   </div>
                 </div>
-                <button className="demo-button" onClick={() => setShow4(true)}>选择日期</button>
+                <button className="demo-button" onClick={() => setShow4(true)}>
+                  选择日期
+                </button>
                 <ResultBox result={result4} />
               </div>
               <LunarDatePicker
@@ -209,7 +221,7 @@ export default function App() {
       <div className="github-link">
         <a href="https://github.com/Gavinoio/lunar-date-picker" target="_blank" rel="noreferrer">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
           </svg>
           View on GitHub
         </a>
