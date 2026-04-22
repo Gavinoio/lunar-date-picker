@@ -203,6 +203,38 @@ export class DatePickerCore {
     )
   }
 
+  // ─── 农历月份索引转换辅助方法 ─────────────────────────────────────────────
+
+  /**
+   * 将农历月份索引转换为实际月份和闰月标志
+   * @param index 列表索引（data-value）
+   * @param leapMonth 闰月月份（0表示无闰月）
+   * @returns { month: 实际月份, isLeap: 是否闰月 }
+   */
+  private lunarIndexToMonth(index: number, leapMonth: number): { month: number; isLeap: boolean } {
+    if (leapMonth > 0 && index === leapMonth) {
+      return { month: leapMonth, isLeap: true }
+    } else if (leapMonth > 0 && index > leapMonth) {
+      return { month: index, isLeap: false }
+    } else {
+      return { month: index + 1, isLeap: false }
+    }
+  }
+
+  /**
+   * 将农历月份和闰月标志转换为列表索引
+   * @param month 实际月份
+   * @param isLeap 是否闰月
+   * @param leapMonth 闰月月份（0表示无闰月）
+   * @returns 列表索引
+   */
+  private lunarMonthToIndex(month: number, isLeap: boolean, leapMonth: number): number {
+    if (leapMonth > 0 && (month > leapMonth || isLeap)) {
+      return month
+    }
+    return month - 1
+  }
+
   // ─── 滚动回调 ─────────────────────────────────────────────────────────────
 
   private onYearChange(index: number, node: NodeListOf<ChildNode>): void {
@@ -231,16 +263,9 @@ export class DatePickerCore {
       this.refreshDayCol()
     } else {
       const leapMonth = LunarCalendar.leapMonth(this.state.lYear)
-      if (leapMonth > 0 && val === leapMonth) {
-        this.state.lMonth = leapMonth
-        this.state.isLeap = true
-      } else if (leapMonth > 0 && val > leapMonth) {
-        this.state.lMonth = val
-        this.state.isLeap = false
-      } else {
-        this.state.lMonth = val + 1
-        this.state.isLeap = false
-      }
+      const { month, isLeap } = this.lunarIndexToMonth(val, leapMonth)
+      this.state.lMonth = month
+      this.state.isLeap = isLeap
       this.refreshLunarDayCol()
     }
     this.emit('change', this.getResult())
@@ -282,10 +307,7 @@ export class DatePickerCore {
     el.innerHTML = this.buildLunarMonthItems(this.state.lYear)
 
     const leapMonth = LunarCalendar.leapMonth(this.state.lYear)
-    let monthPos = this.state.lMonth - 1
-    if (leapMonth > 0 && (this.state.lMonth > leapMonth || this.state.isLeap)) {
-      monthPos += 1
-    }
+    const monthPos = this.lunarMonthToIndex(this.state.lMonth, this.state.isLeap, leapMonth)
 
     const scroller = this.scrollers.get('month')!
     scroller.refresh()
@@ -337,8 +359,7 @@ export class DatePickerCore {
 
       // 月列切换为农历
       const leapMonth = LunarCalendar.leapMonth(lunar.lYear)
-      let monthPos = lunar.lMonth - 1
-      if (leapMonth > 0 && (lunar.lMonth > leapMonth || lunar.isLeap)) monthPos += 1
+      const monthPos = this.lunarMonthToIndex(lunar.lMonth, lunar.isLeap, leapMonth)
 
       const monthEl = this.container.querySelector('.ldp-month-wrapper .ldp-wrapper-ul')!
       monthEl.innerHTML = this.buildLunarMonthItems(lunar.lYear)

@@ -78,7 +78,7 @@ export function LunarDateTimePicker({
       }, 300)
       return () => clearTimeout(timer)
     }
-  }, [show])
+  }, [show, value, type, timeFields, showUnit, unclearFirst, endYear, color, onChange])
 
   useEffect(() => {
     if (value && coreRef.current) coreRef.current.setDate(value)

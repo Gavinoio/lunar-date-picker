@@ -68,7 +68,7 @@ export function LunarDatePicker({
       }, 300)
       return () => clearTimeout(timer)
     }
-  }, [show])
+  }, [show, value, showLunar, endYear, color, onChange])
 
   useEffect(() => {
     return () => { coreRef.current?.destroy() }

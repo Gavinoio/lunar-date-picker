@@ -1,0 +1,15 @@
+# 依赖和构建产物
+node_modules
+dist
+coverage
+
+# 配置文件（使用 CommonJS）
+*.config.js
+.eslintrc.js
+
+# 示例项目
+examples
+
+# 其他
+*.log
+.DS_Store

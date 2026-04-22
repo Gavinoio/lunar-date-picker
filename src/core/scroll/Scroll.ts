@@ -31,7 +31,13 @@ export class Scroll {
 
   constructor(el: string | HTMLElement, options: ScrollOptions = {}) {
     this.scroller = typeof el === 'string' ? document.querySelector(el)! : el
+    if (!this.scroller) {
+      throw new Error('Scroll: scroller element not found')
+    }
     this.childNode = this.scroller.children[0] as HTMLElement
+    if (!this.childNode) {
+      throw new Error('Scroll: child element not found')
+    }
 
     this.options = {
       step: true,

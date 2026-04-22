@@ -306,6 +306,7 @@ React 组件的 Props 与 Vue 组件基本一致，主要区别：
 
 ```javascript
 import { DatePickerCore, DateTimePickerCore } from 'lunar-date-picker'
+import 'lunar-date-picker/style.css' // 核心 API 需要手动导入样式
 
 const container = document.getElementById('picker')
 const picker = new DatePickerCore(container, {
@@ -329,6 +330,50 @@ picker.setDate(new Date())
 
 // 销毁实例
 picker.destroy()
+```
+
+## 本地开发与测试
+
+### 构建项目
+
+```bash
+npm run build
+```
+
+### 在本地项目中测试
+
+**方法 1：使用 npm pack（推荐）**
+
+```bash
+# 在库目录中打包
+npm pack
+
+# 在你的测试项目中安装
+npm install /path/to/lunar-date-picker-1.0.0.tgz
+```
+
+**方法 2：使用 npm link**
+
+```bash
+# 在库目录中创建全局链接
+npm link
+
+# 在你的测试项目中链接
+npm link lunar-date-picker
+```
+
+### 运行示例
+
+```bash
+# Vue 示例
+cd examples/vue-demo
+npm install
+npm run dev
+
+# React 示例
+cd examples/react-demo
+npm install
+npm run dev
 ```
 
 ## License
