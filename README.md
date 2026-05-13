@@ -1,8 +1,8 @@
-# lunar-date-picker
+# lunar-picker
 
 移动端公历/农历日期选择器，支持 Vue 3 和 React 18
 
-[![npm version](https://img.shields.io/npm/v/lunar-date-picker.svg)](https://www.npmjs.com/package/lunar-date-picker)
+[![npm version](https://img.shields.io/npm/v/lunar-picker.svg)](https://www.npmjs.com/package/lunar-picker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## 特性
@@ -18,24 +18,24 @@
 
 ## 在线演示
 
-- [Vue 3 版本](https://gavinoio.github.io/lunar-date-picker/vue/)
-- [React 版本](https://gavinoio.github.io/lunar-date-picker/react/)
+- [Vue 3 版本](https://gavinoio.github.io/lunar-picker/vue/)
+- [React 版本](https://gavinoio.github.io/lunar-picker/react/)
 
 ## 安装
 
 使用 npm：
 ```bash
-npm install lunar-date-picker
+npm install lunar-picker
 ```
 
 使用 yarn：
 ```bash
-yarn add lunar-date-picker
+yarn add lunar-picker
 ```
 
 使用 pnpm：
 ```bash
-pnpm add lunar-date-picker
+pnpm add lunar-picker
 ```
 
 ## Vue 3 使用
@@ -45,7 +45,7 @@ pnpm add lunar-date-picker
 ```vue
 <script setup>
 import { ref } from 'vue'
-import { LunarDatePicker } from 'lunar-date-picker/vue'
+import { LunarDatePicker } from 'lunar-picker/vue'
 
 const show = ref(false)
 const date = ref(new Date())
@@ -78,7 +78,7 @@ function onConfirm(result) {
 ```vue
 <script setup>
 import { ref } from 'vue'
-import { LunarDateTimePicker } from 'lunar-date-picker/vue'
+import { LunarDateTimePicker } from 'lunar-picker/vue'
 
 const show = ref(false)
 const date = ref(new Date())
@@ -221,7 +221,7 @@ interface DateTimeResult extends DateResult {
 
 ```tsx
 import { useState } from 'react'
-import { LunarDatePicker } from 'lunar-date-picker/react'
+import { LunarDatePicker } from 'lunar-picker/react'
 
 function App() {
   const [show, setShow] = useState(false)
@@ -258,7 +258,7 @@ function App() {
 
 ```tsx
 import { useState } from 'react'
-import { LunarDateTimePicker } from 'lunar-date-picker/react'
+import { LunarDateTimePicker } from 'lunar-picker/react'
 
 function App() {
   const [show, setShow] = useState(false)
@@ -305,8 +305,8 @@ React 组件的 Props 与 Vue 组件基本一致，主要区别：
 如果你想在原生 JavaScript 或其他框架中使用，可以直接使用核心类：
 
 ```javascript
-import { DatePickerCore, DateTimePickerCore } from 'lunar-date-picker'
-import 'lunar-date-picker/style.css' // 核心 API 需要手动导入样式
+import { DatePickerCore, DateTimePickerCore } from 'lunar-picker'
+import 'lunar-picker/style.css' // 核心 API 需要手动导入样式
 
 const container = document.getElementById('picker')
 const picker = new DatePickerCore(container, {
@@ -349,7 +349,7 @@ npm run build
 npm pack
 
 # 在你的测试项目中安装
-npm install /path/to/lunar-date-picker-1.0.0.tgz
+npm install /path/to/lunar-picker-1.0.0.tgz
 ```
 
 **方法 2：使用 npm link**
@@ -359,7 +359,7 @@ npm install /path/to/lunar-date-picker-1.0.0.tgz
 npm link
 
 # 在你的测试项目中链接
-npm link lunar-date-picker
+npm link lunar-picker
 ```
 
 ### 运行示例

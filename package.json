@@ -1,5 +1,5 @@
 {
-  "name": "lunar-date-picker",
+  "name": "lunar-picker",
   "version": "1.0.0",
   "description": "移动端公历/农历日期选择器，支持 Vue 3 和 React 18",
   "keywords": [
@@ -15,20 +15,20 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Gavinoio/lunar-date-picker.git"
+    "url": "git+https://github.com/Gavinoio/lunar-picker.git"
   },
   "bugs": {
-    "url": "https://github.com/Gavinoio/lunar-date-picker/issues"
+    "url": "https://github.com/Gavinoio/lunar-picker/issues"
   },
-  "homepage": "https://github.com/Gavinoio/lunar-date-picker#readme",
+  "homepage": "https://github.com/Gavinoio/lunar-picker#readme",
   "main": "./dist/core.js",
   "module": "./dist/core.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/core.d.ts",
   "exports": {
     ".": {
       "import": "./dist/core.mjs",
       "require": "./dist/core.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/core.d.ts"
     },
     "./vue": {
       "import": "./dist/vue.mjs",

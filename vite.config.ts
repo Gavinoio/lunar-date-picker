@@ -11,6 +11,7 @@ export default defineConfig({
     vue(),
     dts({
       include: ['src/**/*'],
+      exclude: ['src/**/__tests__/**'],
       outDir: 'dist',
       staticImport: true,
       rollupTypes: true

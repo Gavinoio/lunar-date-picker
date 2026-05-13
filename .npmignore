@@ -17,7 +17,7 @@ node_modules/
 # 测试文件
 *.test.ts
 *.spec.ts
-__tests__/
+**/__tests__/
 
 # 其他
 .DS_Store
