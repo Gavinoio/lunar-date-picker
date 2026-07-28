@@ -332,6 +332,13 @@ picker.setDate(new Date())
 picker.destroy()
 ```
 
+## 更新记录
+
+### 1.0.1
+
+- 修复 `LunarDateTimePicker` 的 `type` 变化后，公历/农历按钮状态与滚轮内容不同步的问题。
+- 重新生成 `package-lock.json`，移除内网 npm registry 地址。
+
 ## 本地开发与测试
 
 ### 构建项目
@@ -349,7 +356,7 @@ npm run build
 npm pack
 
 # 在你的测试项目中安装
-npm install /path/to/lunar-picker-1.0.0.tgz
+npm install /path/to/lunar-picker-1.0.1.tgz
 ```
 
 **方法 2：使用 npm link**

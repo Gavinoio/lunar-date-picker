@@ -1,6 +1,6 @@
 {
   "name": "lunar-picker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "移动端公历/农历日期选择器，支持 Vue 3 和 React 18",
   "keywords": [
     "date-picker",

@@ -21,6 +21,10 @@ interface LunarDateTimePickerProps {
   onChange?: (result: DateTimeResult) => void
 }
 
+function typeToTab(type: PickerType): 'solar' | 'lunar' {
+  return type === 2 ? 'lunar' : 'solar'
+}
+
 export function LunarDateTimePicker({
   show = false,
   value = new Date(),
@@ -42,11 +46,12 @@ export function LunarDateTimePicker({
   const coreRef = useRef<DateTimePickerCore | null>(null)
   const [visible, setVisible] = useState(false)
   const [animating, setAnimating] = useState(false)
-  const [activeTab, setActiveTab] = useState<'solar' | 'lunar'>(type === 2 ? 'lunar' : 'solar')
+  const [activeTab, setActiveTab] = useState<'solar' | 'lunar'>(typeToTab(type))
 
   function initCore() {
     if (!containerRef.current) return
     coreRef.current?.destroy()
+    setActiveTab(typeToTab(type))
     coreRef.current = new DateTimePickerCore(containerRef.current, {
       defaultDate: value,
       type,
@@ -78,14 +83,16 @@ export function LunarDateTimePicker({
       }, 300)
       return () => clearTimeout(timer)
     }
-  }, [show, value, type, timeFields, showUnit, unclearFirst, endYear, color, onChange])
+  }, [show, value, timeFields, showUnit, unclearFirst, endYear, color, onChange])
 
   useEffect(() => {
     if (value && coreRef.current) coreRef.current.setDate(value)
   }, [value])
 
   useEffect(() => {
-    setActiveTab(type === 2 ? 'lunar' : 'solar')
+    const nextTab = typeToTab(type)
+    setActiveTab(nextTab)
+    coreRef.current?.switchCalendarType(nextTab)
   }, [type])
 
   useEffect(() => {

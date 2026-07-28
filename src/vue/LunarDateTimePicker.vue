@@ -43,13 +43,18 @@ const emit = defineEmits<Emits>()
 const containerRef = ref<HTMLElement>()
 const visible = ref(false)
 const animating = ref(false)
-const activeTab = ref<'solar' | 'lunar'>(props.type === 2 ? 'lunar' : 'solar')
+const activeTab = ref<'solar' | 'lunar'>(typeToTab(props.type))
 
 let core: DateTimePickerCore | null = null
+
+function typeToTab(type: PickerType): 'solar' | 'lunar' {
+  return type === 2 ? 'lunar' : 'solar'
+}
 
 function initCore() {
   if (!containerRef.value) return
   core?.destroy()
+  activeTab.value = typeToTab(props.type)
   core = new DateTimePickerCore(containerRef.value, {
     defaultDate: props.value,
     type: props.type,
@@ -95,7 +100,9 @@ watch(
 watch(
   () => props.type,
   val => {
-    activeTab.value = val === 2 ? 'lunar' : 'solar'
+    const nextTab = typeToTab(val)
+    activeTab.value = nextTab
+    core?.switchCalendarType(nextTab)
   }
 )
 
