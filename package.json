@@ -1,7 +1,11 @@
 {
   "name": "lunar-picker",
-  "version": "1.0.1",
-  "description": "移动端公历/农历日期选择器，支持 Vue 3 和 React 18",
+  "version": "2.0.0",
+  "description": "移动端公历/农历日期选择器，支持 Vue 3、React 18 和 React 19",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
   "keywords": [
     "date-picker",
     "lunar",
@@ -31,39 +35,55 @@
       "types": "./dist/core.d.ts"
     },
     "./vue": {
+      "types": "./dist/vue.d.ts",
+      "browser": {
+        "import": "./dist/vue.browser.mjs",
+        "require": "./dist/vue.browser.js"
+      },
       "import": "./dist/vue.mjs",
-      "require": "./dist/vue.js",
-      "types": "./dist/vue.d.ts"
+      "require": "./dist/vue.js"
     },
     "./react": {
+      "types": "./dist/react.d.ts",
+      "browser": {
+        "import": "./dist/react.browser.mjs",
+        "require": "./dist/react.browser.js"
+      },
       "import": "./dist/react.mjs",
-      "require": "./dist/react.js",
-      "types": "./dist/react.d.ts"
+      "require": "./dist/react.js"
     },
     "./style.css": "./dist/style.css"
   },
   "sideEffects": [
-    "*.css",
+    "dist/*.browser.*",
+    "**/*.css",
     "*.vue"
   ],
   "files": [
     "dist",
+    "assets/*.svg",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "dev:vue": "npm run dev -w vue-demo --",
+    "dev:react": "npm run dev -w react-demo --",
+    "build": "vite build && node scripts/create-browser-style-entries.mjs",
+    "build:vue-demo": "npm run build -w vue-demo",
+    "build:react-demo": "npm run build -w react-demo",
     "preview": "vite preview",
-    "lint": "eslint src --ext .ts,.tsx,.vue",
-    "lint:fix": "eslint src --ext .ts,.tsx,.vue --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,vue,css}\"",
+    "lint": "eslint packages --ext .ts,.tsx,.vue",
+    "lint:fix": "eslint packages --ext .ts,.tsx,.vue --fix",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,vue,css}\"",
     "test": "vitest",
+    "test:package": "node scripts/verify-package-exports.mjs",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
     "vue": "^3.0.0"
   },
   "peerDependenciesMeta": {
@@ -71,6 +91,9 @@
       "optional": true
     },
     "react": {
+      "optional": true
+    },
+    "react-dom": {
       "optional": true
     }
   },

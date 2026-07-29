@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [vue()],
   root: __dirname,
-  base: '/lunar-date-picker/vue/',
+  base: '/lunar-picker/vue/',
   build: {
     outDir: resolve(__dirname, 'dist'),
     emptyOutDir: true

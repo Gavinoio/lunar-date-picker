@@ -2,11 +2,21 @@
 
 export type CalendarType = 'solar' | 'lunar'
 
-// 0: 只公历, 1: 公历+农历切换, 2: 默认农历
-export type PickerType = 0 | 1 | 2
+// 日历模式：只公历、只农历，或允许公历/农历切换
+export type CalendarMode = 'solar' | 'lunar' | 'switch'
 
 // 时间字段类型
 export type TimeField = 'hour' | 'minute' | 'second'
+
+export interface PickerLocale {
+  confirm?: string
+  cancel?: string
+  solar?: string
+  lunar?: string
+}
+
+// 时间字段结果。不清楚字段在 result.date 中按 0 兜底生成 Date。
+export type TimeValue = number | '不清楚'
 
 export interface SolarDate {
   year: number
@@ -42,7 +52,7 @@ export interface DateResult {
 export interface DateTimeResult extends DateResult {
   hour?: number | '不清楚' // 可选，取决于 timeFields 是否包含 'hour'
   minute?: number | '不清楚' // 可选，取决于 timeFields 是否包含 'minute'
-  second?: number // 可选，取决于 timeFields 是否包含 'second'
+  second?: TimeValue // 可选，取决于 timeFields 是否包含 'second'
 }
 
 export interface LunarInfo {

@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { DatePickerCore } from '../core/date-picker/DatePickerCore'
-import type { DateResult } from '../core/types'
+import { DatePickerCore } from '../../core/src/date-picker/DatePickerCore'
+import { resolveLocale } from '../../core/src/locale'
+import type { CalendarMode, CalendarType, DateResult, PickerLocale } from '../../core/src/types'
 
 interface LunarDatePickerProps {
   show?: boolean
   value?: Date
-  showLunar?: boolean
+  calendarMode?: CalendarMode
+  defaultCalendar?: CalendarType
+  startYear?: number
   endYear?: number
   color?: string
-  confirmText?: string
-  cancelText?: string
+  locale?: PickerLocale
   onUpdateShow?: (val: boolean) => void
   onUpdateValue?: (val: Date) => void
   onConfirm?: (result: DateResult) => void
@@ -18,14 +20,21 @@ interface LunarDatePickerProps {
   onChange?: (result: DateResult) => void
 }
 
+function getInitialCalendar(calendarMode: CalendarMode, defaultCalendar: CalendarType): CalendarType {
+  if (calendarMode === 'solar') return 'solar'
+  if (calendarMode === 'lunar') return 'lunar'
+  return defaultCalendar
+}
+
 export function LunarDatePicker({
   show = false,
-  value = new Date(),
-  showLunar = true,
-  endYear = new Date().getFullYear(),
+  value,
+  calendarMode = 'switch',
+  defaultCalendar = 'solar',
+  startYear,
+  endYear,
   color = '#D03F3F',
-  confirmText = '确定',
-  cancelText = '取消',
+  locale,
   onUpdateShow,
   onUpdateValue,
   onConfirm,
@@ -34,19 +43,28 @@ export function LunarDatePicker({
 }: LunarDatePickerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const coreRef = useRef<DatePickerCore | null>(null)
+  const defaultValueRef = useRef<Date>(value ?? new Date())
+  const resolvedValue = value ?? defaultValueRef.current
   const [visible, setVisible] = useState(false)
   const [animating, setAnimating] = useState(false)
-  const [isLunar, setIsLunar] = useState(false)
+  const [activeCalendar, setActiveCalendar] = useState<CalendarType>(
+    getInitialCalendar(calendarMode, defaultCalendar)
+  )
+  const labels = resolveLocale(locale)
 
   function initCore() {
     if (!containerRef.current) return
     coreRef.current?.destroy()
-    setIsLunar(false)
+    const initialCalendar = getInitialCalendar(calendarMode, defaultCalendar)
+    setActiveCalendar(initialCalendar)
     coreRef.current = new DatePickerCore(containerRef.current, {
-      defaultDate: value,
-      showLunar,
+      defaultDate: resolvedValue,
+      calendarMode,
+      defaultCalendar,
+      startYear,
       endYear,
       primaryColor: color,
+      locale,
       onChange: result => onChange?.(result)
     })
   }
@@ -68,16 +86,16 @@ export function LunarDatePicker({
       }, 300)
       return () => clearTimeout(timer)
     }
-  }, [show, value, showLunar, endYear, color, onChange])
+  }, [show, resolvedValue, calendarMode, defaultCalendar, startYear, endYear, color, locale, onChange])
 
   useEffect(() => {
     return () => { coreRef.current?.destroy() }
   }, [])
 
   function toggleLunar() {
-    const next = !isLunar
-    setIsLunar(next)
-    coreRef.current?.switchCalendarType(next ? 'lunar' : 'solar')
+    const next = activeCalendar === 'lunar' ? 'solar' : 'lunar'
+    setActiveCalendar(next)
+    coreRef.current?.switchCalendarType(next)
   }
 
   function handleConfirm() {
@@ -107,21 +125,21 @@ export function LunarDatePicker({
         onClick={e => e.stopPropagation()}
       >
         <div className="ldp-header">
-          <div className="ldp-cancel" onClick={handleCancel}>{cancelText}</div>
+          <div className="ldp-cancel" onClick={handleCancel}>{labels.cancel}</div>
           <div />
-          <div className="ldp-confirm" onClick={handleConfirm}>{confirmText}</div>
+          <div className="ldp-confirm" onClick={handleConfirm}>{labels.confirm}</div>
         </div>
 
         <div ref={containerRef} className="ldp-container" />
 
-        {showLunar && (
+        {calendarMode === 'switch' && (
           <div className="ldp-footer">
             <div
-              className={`ldp-lunar-toggle${isLunar ? ' active' : ''}`}
+              className={`ldp-lunar-toggle${activeCalendar === 'lunar' ? ' active' : ''}`}
               onClick={toggleLunar}
             >
               <div className="ldp-lunar-circle" />
-              <span>农历</span>
+              <span>{labels.lunar}</span>
             </div>
           </div>
         )}

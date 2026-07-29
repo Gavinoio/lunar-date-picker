@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">lunar-picker logo</title>
+  <desc id="desc">A minimal rounded crescent moon mark.</desc>
+  <defs>
+    <mask id="crescent-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="black"/>
+      <circle cx="242" cy="256" r="178" fill="white"/>
+      <circle cx="318" cy="224" r="150" fill="black"/>
+    </mask>
+  </defs>
+  <g transform="rotate(-10 256 256)">
+    <rect width="512" height="512" fill="#D03F3F" mask="url(#crescent-mask)"/>
+  </g>
+</svg>

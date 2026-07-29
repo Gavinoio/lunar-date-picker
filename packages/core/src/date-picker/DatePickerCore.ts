@@ -1,6 +1,7 @@
 import { LunarCalendar } from '../calendar/lunar'
+import { resolveLocale } from '../locale'
 import { Scroll } from '../scroll/Scroll'
-import type { DateResult, LunarInfo } from '../types'
+import type { DateResult, LunarInfo, PickerLocale } from '../types'
 import type {
   DatePickerCoreOptions,
   DatePickerState,
@@ -11,9 +12,35 @@ import type {
 // 常量定义
 const WEEK_CN = ['日', '一', '二', '三', '四', '五', '六']
 const ITEM_HEIGHT = 44
-const START_YEAR = 1910
+const DEFAULT_START_YEAR = 1910
+const MIN_SUPPORTED_YEAR = 1900
+const MAX_SUPPORTED_YEAR = 2100
+
+function getMaxSelectableYear(): number {
+  return Math.min(new Date().getFullYear(), MAX_SUPPORTED_YEAR)
+}
+
+function clampYear(year: number, min: number, max: number): number {
+  return Math.min(Math.max(year, min), max)
+}
+
+function resolveYearRange(options: DatePickerCoreOptions): { startYear: number; endYear: number } {
+  const maxSelectableYear = getMaxSelectableYear()
+  let startYear = clampYear(options.startYear ?? DEFAULT_START_YEAR, MIN_SUPPORTED_YEAR, maxSelectableYear)
+  let endYear = clampYear(options.endYear ?? maxSelectableYear, MIN_SUPPORTED_YEAR, maxSelectableYear)
+
+  if (startYear > endYear) {
+    startYear = MIN_SUPPORTED_YEAR
+    endYear = maxSelectableYear
+  }
+
+  return { startYear, endYear }
+}
 
 type EventName = 'change' | 'confirm' | 'cancel'
+type DatePickerResolvedOptions = Required<Omit<DatePickerCoreOptions, 'locale'>> & {
+  locale: Required<PickerLocale>
+}
 
 /**
  * DatePickerCore - 日期选择器核心类（只选日期，不含时间）
@@ -26,7 +53,7 @@ type EventName = 'change' | 'confirm' | 'cancel'
  */
 export class DatePickerCore {
   private container: HTMLElement
-  private options: Required<DatePickerCoreOptions>
+  private options: DatePickerResolvedOptions
   private state: DatePickerState
   private scrollers: Map<string, Scroll> = new Map()
   private itemHeight = ITEM_HEIGHT
@@ -39,29 +66,61 @@ export class DatePickerCore {
 
     const d = options.defaultDate || new Date()
 
+    const { startYear, endYear } = resolveYearRange(options)
+
     this.options = {
       defaultDate: d,
-      showLunar: options.showLunar ?? true,
-      endYear: options.endYear || new Date().getFullYear(),
-      primaryColor: options.primaryColor || '#D03F3F',
-      onChange: options.onChange || (() => {}),
-      onConfirm: options.onConfirm || (() => {}),
-      onCancel: options.onCancel || (() => {})
+      calendarMode: options.calendarMode ?? 'switch',
+      defaultCalendar: options.defaultCalendar ?? 'solar',
+      startYear,
+      endYear,
+      primaryColor: options.primaryColor ?? '#D03F3F',
+      locale: resolveLocale(options.locale),
+      onChange: options.onChange ?? (() => {}),
+      onConfirm: options.onConfirm ?? (() => {}),
+      onCancel: options.onCancel ?? (() => {})
     }
+
+    const calendarType = this.getInitialCalendarType()
+    const lunar = LunarCalendar.solar2lunar(d.getFullYear(), d.getMonth() + 1, d.getDate())
+
+    if (!lunar) {
+      throw new Error('DatePickerCore: defaultDate is outside supported range')
+    }
+    this.validateDateInRange(d, 'defaultDate')
 
     this.state = {
       year: d.getFullYear(),
       month: d.getMonth(), // 0-based
       day: d.getDate(),
-      calendarType: 'solar',
-      lYear: 0,
-      lMonth: 0,
-      lDay: 0,
-      isLeap: false
+      calendarType,
+      lYear: lunar.lYear,
+      lMonth: lunar.lMonth,
+      lDay: lunar.lDay,
+      isLeap: lunar.isLeap
     }
 
     this.render()
     this.initScrollers()
+  }
+
+  private getInitialCalendarType(): 'solar' | 'lunar' {
+    if (this.options.calendarMode === 'solar') return 'solar'
+    if (this.options.calendarMode === 'lunar') return 'lunar'
+    return this.options.defaultCalendar
+  }
+
+  private canUseCalendar(type: 'solar' | 'lunar'): boolean {
+    return this.options.calendarMode === 'switch' || this.options.calendarMode === type
+  }
+
+  private validateDateInRange(date: Date, name: string): void {
+    const year = date.getFullYear()
+    if (year < this.options.startYear || year > this.options.endYear) {
+      throw new Error(
+        `DatePickerCore: ${name} year must be between ${this.options.startYear} and ${this.options.endYear}`
+      )
+    }
   }
 
   // ─── 渲染骨架 ─────────────────────────────────────────────────────────────
@@ -76,10 +135,10 @@ export class DatePickerCore {
 
   // ─── 生成列内容 ───────────────────────────────────────────────────────────
 
-  /** 生成年份列表（1910 - endYear） */
+  /** 生成年份列表（startYear - endYear） */
   private buildYearItems(): string {
     const items: string[] = []
-    for (let y = START_YEAR; y <= this.options.endYear; y++) {
+    for (let y = this.options.startYear; y <= this.options.endYear; y++) {
       items.push(`<li data-value="${y}" class="ldp-row">${y}年</li>`)
     }
     return items.join('')
@@ -160,13 +219,7 @@ export class DatePickerCore {
   private initScrollers(): void {
     const s = this.state
 
-    // 渲染初始内容
-    this.container.querySelector('.ldp-year-wrapper .ldp-wrapper-ul')!.innerHTML =
-      this.buildYearItems()
-    this.container.querySelector('.ldp-month-wrapper .ldp-wrapper-ul')!.innerHTML =
-      this.buildSolarMonthItems()
-    this.container.querySelector('.ldp-day-wrapper .ldp-wrapper-ul')!.innerHTML =
-      this.buildSolarDayItems(s.year, s.month)
+    this.renderColsForState()
 
     const firstRow = this.container.querySelector('.ldp-row') as HTMLElement
     this.itemHeight = firstRow?.clientHeight || ITEM_HEIGHT
@@ -177,7 +230,8 @@ export class DatePickerCore {
       'year',
       new Scroll(this.container.querySelector('.ldp-year-wrapper') as HTMLElement, {
         step: true,
-        defaultPlace: h * (s.year - START_YEAR),
+        defaultPlace:
+          h * ((s.calendarType === 'solar' ? s.year : s.lYear) - this.options.startYear),
         callback: params => this.onYearChange(params.index, params.node)
       })
     )
@@ -187,7 +241,7 @@ export class DatePickerCore {
       'month',
       new Scroll(this.container.querySelector('.ldp-month-wrapper') as HTMLElement, {
         step: true,
-        defaultPlace: h * s.month,
+        defaultPlace: h * this.getMonthPosition(),
         callback: params => this.onMonthChange(params.index, params.node)
       })
     )
@@ -197,10 +251,49 @@ export class DatePickerCore {
       'day',
       new Scroll(this.container.querySelector('.ldp-day-wrapper') as HTMLElement, {
         step: true,
-        defaultPlace: h * (s.day - 1),
+        defaultPlace: h * this.getDayPosition(),
         callback: params => this.onDayChange(params.index, params.node)
       })
     )
+  }
+
+  private renderColsForState(): void {
+    this.container.querySelector('.ldp-year-wrapper .ldp-wrapper-ul')!.innerHTML =
+      this.buildYearItems()
+
+    if (this.state.calendarType === 'solar') {
+      this.container.querySelector('.ldp-month-wrapper .ldp-wrapper-ul')!.innerHTML =
+        this.buildSolarMonthItems()
+      this.container.querySelector('.ldp-day-wrapper .ldp-wrapper-ul')!.innerHTML =
+        this.buildSolarDayItems(this.state.year, this.state.month)
+      return
+    }
+
+    this.container.querySelector('.ldp-month-wrapper .ldp-wrapper-ul')!.innerHTML =
+      this.buildLunarMonthItems(this.state.lYear)
+    this.container.querySelector('.ldp-day-wrapper .ldp-wrapper-ul')!.innerHTML =
+      this.buildLunarDayItems(this.state.lYear, this.state.lMonth, this.state.isLeap)
+  }
+
+  private getMonthPosition(): number {
+    if (this.state.calendarType === 'solar') return this.state.month
+    return this.lunarMonthToIndex(
+      this.state.lMonth,
+      this.state.isLeap,
+      LunarCalendar.leapMonth(this.state.lYear)
+    )
+  }
+
+  private getDayPosition(): number {
+    return this.state.calendarType === 'solar' ? this.state.day - 1 : this.state.lDay - 1
+  }
+
+  private refreshScrollers(time = 300): void {
+    this.scrollers.forEach(s => s.refresh())
+    const year = this.state.calendarType === 'solar' ? this.state.year : this.state.lYear
+    this.scrollers.get('year')?.scrollTo(0, this.itemHeight * (year - this.options.startYear), time)
+    this.scrollers.get('month')?.scrollTo(0, this.itemHeight * this.getMonthPosition(), time)
+    this.scrollers.get('day')?.scrollTo(0, this.itemHeight * this.getDayPosition(), time)
   }
 
   // ─── 农历月份索引转换辅助方法 ─────────────────────────────────────────────
@@ -338,6 +431,7 @@ export class DatePickerCore {
    */
   switchCalendarType(type: 'solar' | 'lunar'): void {
     if (this.state.calendarType === type) return
+    if (!this.canUseCalendar(type)) return
     const h = this.itemHeight
 
     if (type === 'lunar') {
@@ -355,7 +449,7 @@ export class DatePickerCore {
       const yearEl = this.container.querySelector('.ldp-year-wrapper .ldp-wrapper-ul')!
       yearEl.innerHTML = this.buildYearItems()
       yearScroller.refresh()
-      yearScroller.scrollTo(0, h * (lunar.lYear - 1910), 500)
+      yearScroller.scrollTo(0, h * (lunar.lYear - this.options.startYear), 500)
 
       // 月列切换为农历
       const leapMonth = LunarCalendar.leapMonth(lunar.lYear)
@@ -391,7 +485,7 @@ export class DatePickerCore {
       yearEl.innerHTML = this.buildYearItems()
       const yearScroller = this.scrollers.get('year')!
       yearScroller.refresh()
-      yearScroller.scrollTo(0, h * (solar.cYear - 1910), 500)
+      yearScroller.scrollTo(0, h * (solar.cYear - this.options.startYear), 500)
 
       const monthEl = this.container.querySelector('.ldp-month-wrapper .ldp-wrapper-ul')!
       monthEl.innerHTML = this.buildSolarMonthItems()
@@ -463,13 +557,35 @@ export class DatePickerCore {
 
   /** 设置日期并滚动到对应位置 */
   setDate(date: Date): void {
-    this.state.year = date.getFullYear()
-    this.state.month = date.getMonth()
-    this.state.day = date.getDate()
-    const h = this.itemHeight
-    this.scrollers.get('year')?.scrollTo(0, h * (this.state.year - START_YEAR), 300)
-    this.scrollers.get('month')?.scrollTo(0, h * this.state.month, 300)
-    this.scrollers.get('day')?.scrollTo(0, h * (this.state.day - 1), 300)
+    this.validateDateInRange(date, 'date')
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const day = date.getDate()
+    const lunar = LunarCalendar.solar2lunar(year, month + 1, day)
+    if (!lunar) {
+      throw new Error('DatePickerCore: date is outside supported range')
+    }
+
+    this.state.year = year
+    this.state.month = month
+    this.state.day = day
+    this.state.lYear = lunar.lYear
+    this.state.lMonth = lunar.lMonth
+    this.state.lDay = lunar.lDay
+    this.state.isLeap = lunar.isLeap
+
+    this.renderColsForState()
+    this.refreshScrollers()
+  }
+
+  /** 确认选择 */
+  confirm(): void {
+    this.emit('confirm', this.getResult())
+  }
+
+  /** 取消选择 */
+  cancel(): void {
+    this.emit('cancel')
   }
 
   // ─── 事件 ─────────────────────────────────────────────────────────────────
@@ -493,6 +609,9 @@ export class DatePickerCore {
 
   /** 触发事件 */
   private emit(event: EventName, ...args: unknown[]): void {
+    if (event === 'change') this.options.onChange(args[0] as DateResult)
+    if (event === 'confirm') this.options.onConfirm(args[0] as DateResult)
+    if (event === 'cancel') this.options.onCancel()
     this.listeners.get(event)?.forEach(fn => fn(...(args as [DateResult])))
   }
 

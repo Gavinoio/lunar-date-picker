@@ -3,6 +3,7 @@ export { LunarCalendar } from './calendar/lunar'
 export { Scroll } from './scroll/Scroll'
 export { DateTimePickerCore } from './datetime-picker/DateTimePickerCore'
 export { DatePickerCore } from './date-picker/DatePickerCore'
+export { DEFAULT_PICKER_LOCALE, resolveLocale } from './locale'
 
 // 导出常量（按需导入）
 export * from './calendar/constants'
@@ -10,13 +11,15 @@ export * from './calendar/constants'
 // 导出类型
 export type {
   CalendarType,
-  PickerType,
+  CalendarMode,
   TimeField,
+  TimeValue,
   SolarDate,
   LunarDate,
   DateResult,
   DateTimeResult,
-  LunarInfo
+  LunarInfo,
+  PickerLocale
 } from './types'
 
 export type { ScrollOptions, ScrollResult, ScrollCallback } from './scroll/types'

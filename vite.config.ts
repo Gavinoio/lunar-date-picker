@@ -10,8 +10,8 @@ export default defineConfig({
   plugins: [
     vue(),
     dts({
-      include: ['src/**/*'],
-      exclude: ['src/**/__tests__/**'],
+      include: ['packages/**/*'],
+      exclude: ['packages/**/__tests__/**'],
       outDir: 'dist',
       staticImport: true,
       rollupTypes: true
@@ -20,9 +20,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        core: resolve(__dirname, 'src/core/index.ts'),
-        vue: resolve(__dirname, 'src/vue/index.ts'),
-        react: resolve(__dirname, 'src/react/index.ts')
+        core: resolve(__dirname, 'packages/core/src/index.ts'),
+        vue: resolve(__dirname, 'packages/vue/src/index.ts'),
+        react: resolve(__dirname, 'packages/react/src/index.ts')
       },
       formats: ['es', 'cjs'],
       fileName: (format, entryName) => {
@@ -64,8 +64,6 @@ export default defineConfig({
     sourcemap: true
   },
   resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
-    }
+    alias: {}
   }
 })

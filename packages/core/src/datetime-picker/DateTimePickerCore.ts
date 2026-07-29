@@ -1,6 +1,7 @@
 import { LunarCalendar } from '../calendar/lunar'
+import { resolveLocale } from '../locale'
 import { Scroll } from '../scroll/Scroll'
-import type { DateTimeResult, LunarInfo } from '../types'
+import type { DateTimeResult, LunarInfo, PickerLocale } from '../types'
 import type {
   DateTimePickerCoreOptions,
   DateTimeState,
@@ -9,10 +10,40 @@ import type {
 } from './types'
 
 // 常量定义
-const START_YEAR = 1910 // 起始年份
+const DEFAULT_START_YEAR = 1910 // 起始年份
+const MIN_SUPPORTED_YEAR = 1900
+const MAX_SUPPORTED_YEAR = 2100
 const ITEM_HEIGHT = 44 // 每个选项的高度（px）
+const UNCLEAR_VALUE = '不清楚'
+
+function getMaxSelectableYear(): number {
+  return Math.min(new Date().getFullYear(), MAX_SUPPORTED_YEAR)
+}
+
+function clampYear(year: number, min: number, max: number): number {
+  return Math.min(Math.max(year, min), max)
+}
+
+function resolveYearRange(options: DateTimePickerCoreOptions): {
+  startYear: number
+  endYear: number
+} {
+  const maxSelectableYear = getMaxSelectableYear()
+  let startYear = clampYear(options.startYear ?? DEFAULT_START_YEAR, MIN_SUPPORTED_YEAR, maxSelectableYear)
+  let endYear = clampYear(options.endYear ?? maxSelectableYear, MIN_SUPPORTED_YEAR, maxSelectableYear)
+
+  if (startYear > endYear) {
+    startYear = MIN_SUPPORTED_YEAR
+    endYear = maxSelectableYear
+  }
+
+  return { startYear, endYear }
+}
 
 type EventName = 'change' | 'confirm' | 'cancel'
+type DateTimePickerResolvedOptions = Required<Omit<DateTimePickerCoreOptions, 'locale'>> & {
+  locale: Required<PickerLocale>
+}
 
 /**
  * DateTimePickerCore - 日期时间选择器核心类
@@ -25,7 +56,7 @@ type EventName = 'change' | 'confirm' | 'cancel'
  */
 export class DateTimePickerCore {
   private container: HTMLElement
-  private options: Required<DateTimePickerCoreOptions>
+  private options: DateTimePickerResolvedOptions
   private state: DateTimeState
   private scrollers: Map<string, Scroll> = new Map()
   private itemHeight = ITEM_HEIGHT
@@ -34,51 +65,56 @@ export class DateTimePickerCore {
     Array<DateTimePickerEventHandler | DateTimePickerCancelHandler>
   > = new Map()
 
-  constructor(container: HTMLElement, options: DateTimePickerCoreOptions) {
+  constructor(container: HTMLElement, options: DateTimePickerCoreOptions = {}) {
     this.container = container
+    const { startYear, endYear } = resolveYearRange(options)
     this.options = {
-      defaultDate: new Date(),
-      type: 1,
-      timeFields: ['hour', 'minute'], // 默认显示时分
-      showUnit: true,
-      unclearFirst: false,
-      endYear: new Date().getFullYear(),
-      primaryColor: '#D03F3F',
-      onChange: () => {},
-      onConfirm: () => {},
-      onCancel: () => {},
-      ...options
+      defaultDate: options.defaultDate ?? new Date(),
+      calendarMode: options.calendarMode ?? 'switch',
+      defaultCalendar: options.defaultCalendar ?? 'solar',
+      startYear,
+      timeFields: options.timeFields ?? ['hour', 'minute'], // 默认显示时分
+      showUnit: options.showUnit ?? true,
+      showUnclear: options.showUnclear ?? true,
+      unclearPosition: options.unclearPosition ?? 'last',
+      endYear,
+      primaryColor: options.primaryColor ?? '#D03F3F',
+      locale: resolveLocale(options.locale),
+      onChange: options.onChange ?? (() => {}),
+      onConfirm: options.onConfirm ?? (() => {}),
+      onCancel: options.onCancel ?? (() => {})
     }
 
     const d = this.options.defaultDate
-    const calendarType = this.options.type === 2 ? 'lunar' : 'solar'
+    this.validateDateInRange(d, 'defaultDate')
+    const calendarType = this.getInitialCalendarType()
     const hasHour = this.options.timeFields.includes('hour')
     const hasMinute = this.options.timeFields.includes('minute')
     const hasSecond = this.options.timeFields.includes('second')
 
     // 初始化状态
     if (calendarType === 'lunar') {
-      // type=2 默认农历，需要先转换
+      // 默认农历，需要先转换
       const lunar = LunarCalendar.solar2lunar(d.getFullYear(), d.getMonth() + 1, d.getDate())
       this.state = {
         year: lunar?.lYear || d.getFullYear(),
         month: lunar?.lMonth || d.getMonth() + 1,
         day: lunar?.lDay || d.getDate(),
-        hour: hasHour ? (this.options.unclearFirst ? '不清楚' : d.getHours()) : undefined,
-        minute: hasMinute ? (this.options.unclearFirst ? '不清楚' : d.getMinutes()) : undefined,
-        second: hasSecond ? d.getSeconds() : undefined,
+        hour: hasHour ? this.getInitialTimeValue(d.getHours()) : undefined,
+        minute: hasMinute ? this.getInitialTimeValue(d.getMinutes()) : undefined,
+        second: hasSecond ? this.getInitialTimeValue(d.getSeconds()) : undefined,
         isLeap: lunar?.isLeap || false,
         calendarType: 'lunar'
       }
     } else {
-      // type=0 或 type=1，默认公历
+      // 默认公历
       this.state = {
         year: d.getFullYear(),
         month: d.getMonth() + 1,
         day: d.getDate(),
-        hour: hasHour ? (this.options.unclearFirst ? '不清楚' : d.getHours()) : undefined,
-        minute: hasMinute ? (this.options.unclearFirst ? '不清楚' : d.getMinutes()) : undefined,
-        second: hasSecond ? d.getSeconds() : undefined,
+        hour: hasHour ? this.getInitialTimeValue(d.getHours()) : undefined,
+        minute: hasMinute ? this.getInitialTimeValue(d.getMinutes()) : undefined,
+        second: hasSecond ? this.getInitialTimeValue(d.getSeconds()) : undefined,
         isLeap: false,
         calendarType: 'solar'
       }
@@ -87,6 +123,43 @@ export class DateTimePickerCore {
     this.render()
     this.initScrollers()
     this.bindPanelEvents()
+  }
+
+  private getInitialCalendarType(): 'solar' | 'lunar' {
+    if (this.options.calendarMode === 'solar') return 'solar'
+    if (this.options.calendarMode === 'lunar') return 'lunar'
+    return this.options.defaultCalendar
+  }
+
+  private canUseCalendar(type: 'solar' | 'lunar'): boolean {
+    return this.options.calendarMode === 'switch' || this.options.calendarMode === type
+  }
+
+  private validateDateInRange(date: Date, name: string): void {
+    const year = date.getFullYear()
+    if (year < this.options.startYear || year > this.options.endYear) {
+      throw new Error(
+        `DateTimePickerCore: ${name} year must be between ${this.options.startYear} and ${this.options.endYear}`
+      )
+    }
+  }
+
+  private isUnclearFirst(): boolean {
+    return this.options.showUnclear && this.options.unclearPosition === 'first'
+  }
+
+  private getInitialTimeValue(value: number): number | '不清楚' {
+    return this.isUnclearFirst() ? UNCLEAR_VALUE : value
+  }
+
+  private getTimePosition(value: number | '不清楚' | undefined, max: number): number {
+    if (value === UNCLEAR_VALUE) return this.isUnclearFirst() ? 0 : max + 1
+    const num = typeof value === 'number' ? value : 0
+    return this.isUnclearFirst() ? num + 1 : num
+  }
+
+  private parseTimeValue(value: number, max: number): number | '不清楚' {
+    return this.options.showUnclear && value === max + 1 ? UNCLEAR_VALUE : value
   }
 
   // ─── 渲染 ────────────────────────────────────────────────────────────────
@@ -174,13 +247,13 @@ export class DateTimePickerCore {
 
   /**
    * 生成时间列表项（时、分、秒）
-   * 包含"不清楚"选项，位置由 unclearFirst 控制
+   * 包含"不清楚"选项，位置由 unclearPosition 控制
    */
   private renderTimeItem(start: number, end: number, unit: string): string {
     const unclearValue = end + 1
     const items: string[] = []
 
-    if (this.options.unclearFirst) {
+    if (this.isUnclearFirst()) {
       items.push(`<li data-value="${unclearValue}" class="ldp-row">不清楚</li>`)
     }
 
@@ -190,7 +263,7 @@ export class DateTimePickerCore {
       items.push(`<li data-value="${i}" class="ldp-row">${time}${unitText}</li>`)
     }
 
-    if (!this.options.unclearFirst) {
+    if (this.options.showUnclear && !this.isUnclearFirst()) {
       items.push(`<li data-value="${unclearValue}" class="ldp-row">不清楚</li>`)
     }
 
@@ -199,7 +272,7 @@ export class DateTimePickerCore {
 
   private renderYearCol(): void {
     const el = this.container.querySelector('.ldp-year-wrapper .ldp-wrapper-ul')!
-    el.innerHTML = this.renderItem(START_YEAR, this.options.endYear, 'year')
+    el.innerHTML = this.renderItem(this.options.startYear, this.options.endYear, 'year')
   }
 
   private renderMonthCol(leapMonth = 0): void {
@@ -270,10 +343,11 @@ export class DateTimePickerCore {
     this.itemHeight = firstRow?.clientHeight || ITEM_HEIGHT
 
     const h = this.itemHeight
-    const yearPos = s.year - START_YEAR
+    const yearPos = s.year - this.options.startYear
     const dayPos = s.day - 1
-    const hourPos = this.options.unclearFirst ? 0 : typeof s.hour === 'number' ? s.hour : 0
-    const minutePos = this.options.unclearFirst ? 0 : typeof s.minute === 'number' ? s.minute : 0
+    const hourPos = this.getTimePosition(s.hour, 23)
+    const minutePos = this.getTimePosition(s.minute, 59)
+    const secondPos = this.getTimePosition(s.second, 59)
 
     // 年
     this.scrollers.set(
@@ -319,7 +393,7 @@ export class DateTimePickerCore {
           callback: params => {
             const item = params.node[params.index] as HTMLElement
             const val = parseInt(item.dataset.value!)
-            this.state.hour = val === 24 ? '不清楚' : val
+            this.state.hour = this.parseTimeValue(val, 23)
             this.emit('change', this.getResult())
           }
         })
@@ -336,7 +410,7 @@ export class DateTimePickerCore {
           callback: params => {
             const item = params.node[params.index] as HTMLElement
             const val = parseInt(item.dataset.value!)
-            this.state.minute = val === 60 ? '不清楚' : val
+            this.state.minute = this.parseTimeValue(val, 59)
             this.emit('change', this.getResult())
           }
         })
@@ -349,10 +423,10 @@ export class DateTimePickerCore {
         'second',
         new Scroll(this.container.querySelector('.ldp-second-wrapper') as HTMLElement, {
           step: true,
-          defaultPlace: 0,
+          defaultPlace: h * secondPos,
           callback: params => {
             const item = params.node[params.index] as HTMLElement
-            this.state.second = parseInt(item.dataset.value!)
+            this.state.second = this.parseTimeValue(parseInt(item.dataset.value!), 59)
             this.emit('change', this.getResult())
           }
         })
@@ -483,6 +557,7 @@ export class DateTimePickerCore {
    */
   switchCalendarType(type: 'solar' | 'lunar'): void {
     if (this.state.calendarType === type) return
+    if (!this.canUseCalendar(type)) return
     const h = this.itemHeight
 
     if (type === 'lunar') {
@@ -515,7 +590,7 @@ export class DateTimePickerCore {
       monthScroll.refresh()
       dayScroll.refresh()
 
-      this.scrollers.get('year')!.scrollTo(0, (lunar.lYear - START_YEAR) * h, 500)
+      this.scrollers.get('year')!.scrollTo(0, (lunar.lYear - this.options.startYear) * h, 500)
       monthScroll.scrollTo(0, lMonth * h, 500)
       dayScroll.scrollTo(0, (lunar.lDay - 1) * h, 500)
     } else {
@@ -541,10 +616,12 @@ export class DateTimePickerCore {
       monthScroll.refresh()
       dayScroll.refresh()
 
-      this.scrollers.get('year')!.scrollTo(0, (solar.cYear - START_YEAR) * h, 500)
+      this.scrollers.get('year')!.scrollTo(0, (solar.cYear - this.options.startYear) * h, 500)
       monthScroll.scrollTo(0, (solar.cMonth - 1) * h, 500)
       dayScroll.scrollTo(0, (solar.cDay - 1) * h, 500)
     }
+
+    this.emit('change', this.getResult())
   }
 
   // ─── 面板事件（由 Vue 组件调用） ─────────────────────────────────────────
@@ -556,14 +633,11 @@ export class DateTimePickerCore {
 
   /** 确认选择 */
   confirm(): void {
-    const result = this.getResult()
-    this.options.onConfirm(result)
-    this.emit('confirm', result)
+    this.emit('confirm', this.getResult())
   }
 
   /** 取消选择 */
   cancel(): void {
-    this.options.onCancel()
     this.emit('cancel')
   }
 
@@ -630,14 +704,55 @@ export class DateTimePickerCore {
 
   /** 设置日期并滚动到对应位置 */
   setDate(date: Date): void {
-    this.state.year = date.getFullYear()
-    this.state.month = date.getMonth() + 1
-    this.state.day = date.getDate()
+    this.validateDateInRange(date, 'date')
+    const lunar = LunarCalendar.solar2lunar(date.getFullYear(), date.getMonth() + 1, date.getDate())
+    if (!lunar) {
+      throw new Error('DateTimePickerCore: date is outside supported range')
+    }
+
+    if (this.state.calendarType === 'lunar') {
+      this.state.year = lunar.lYear
+      this.state.month = lunar.lMonth
+      this.state.day = lunar.lDay
+      this.state.isLeap = lunar.isLeap
+    } else {
+      this.state.year = date.getFullYear()
+      this.state.month = date.getMonth() + 1
+      this.state.day = date.getDate()
+      this.state.isLeap = false
+    }
+
+    if (this.options.timeFields.includes('hour')) this.state.hour = date.getHours()
+    if (this.options.timeFields.includes('minute')) this.state.minute = date.getMinutes()
+    if (this.options.timeFields.includes('second')) this.state.second = date.getSeconds()
+
+    const days =
+      this.state.calendarType === 'lunar'
+        ? this.state.isLeap
+          ? LunarCalendar.leapDays(this.state.year)
+          : LunarCalendar.monthDays(this.state.year, this.state.month)
+        : LunarCalendar.solarDays(this.state.year, this.state.month)
+
+    const leapMonth =
+      this.state.calendarType === 'lunar' ? LunarCalendar.leapMonth(this.state.year) : 0
+
+    this.renderYearCol()
+    this.renderMonthCol(leapMonth)
+    this.renderDayCol(days)
+    if (this.options.timeFields.includes('hour')) this.renderHourCol()
+    if (this.options.timeFields.includes('minute')) this.renderMinuteCol()
+    if (this.options.timeFields.includes('second')) this.renderSecondCol()
 
     const h = this.itemHeight
-    this.scrollers.get('year')?.scrollTo(0, (this.state.year - START_YEAR) * h, 300)
-    this.scrollers.get('month')?.scrollTo(0, (this.state.month - 1) * h, 300)
+    this.scrollers.forEach(s => s.refresh())
+    this.scrollers.get('year')?.scrollTo(0, (this.state.year - this.options.startYear) * h, 300)
+    this.scrollers
+      .get('month')
+      ?.scrollTo(0, this.lunarMonthToIndex(this.state.month, this.state.isLeap, leapMonth) * h, 300)
     this.scrollers.get('day')?.scrollTo(0, (this.state.day - 1) * h, 300)
+    this.scrollers.get('hour')?.scrollTo(0, this.getTimePosition(this.state.hour, 23) * h, 300)
+    this.scrollers.get('minute')?.scrollTo(0, this.getTimePosition(this.state.minute, 59) * h, 300)
+    this.scrollers.get('second')?.scrollTo(0, this.getTimePosition(this.state.second, 59) * h, 300)
   }
 
   // ─── 事件系统 ────────────────────────────────────────────────────────────
@@ -661,6 +776,9 @@ export class DateTimePickerCore {
 
   /** 触发事件 */
   private emit(event: EventName, ...args: unknown[]): void {
+    if (event === 'change') this.options.onChange(args[0] as DateTimeResult)
+    if (event === 'confirm') this.options.onConfirm(args[0] as DateTimeResult)
+    if (event === 'cancel') this.options.onCancel()
     this.listeners.get(event)?.forEach(fn => fn(...(args as [DateTimeResult])))
   }
 

@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [react()],
   root: __dirname,
-  base: '/lunar-date-picker/react/',
+  base: '/lunar-picker/react/',
   build: {
     outDir: resolve(__dirname, 'dist'),
     emptyOutDir: true

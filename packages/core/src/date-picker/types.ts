@@ -1,13 +1,16 @@
-import type { DateResult } from '../types'
+import type { CalendarMode, CalendarType, DateResult, PickerLocale } from '../types'
 
 /**
  * DatePickerCore 配置选项
  */
 export interface DatePickerCoreOptions {
   defaultDate?: Date
-  showLunar?: boolean
+  calendarMode?: CalendarMode
+  defaultCalendar?: CalendarType
+  startYear?: number
   endYear?: number
   primaryColor?: string
+  locale?: PickerLocale
   onChange?: (result: DateResult) => void
   onConfirm?: (result: DateResult) => void
   onCancel?: () => void

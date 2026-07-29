@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onUnmounted } from 'vue'
-import { DatePickerCore } from '../core/date-picker/DatePickerCore'
-import type { DateResult } from '../core/types'
+import { computed, ref, watch, nextTick, onUnmounted } from 'vue'
+import { DatePickerCore } from '../../core/src/date-picker/DatePickerCore'
+import { resolveLocale } from '../../core/src/locale'
+import type { CalendarMode, CalendarType, DateResult, PickerLocale } from '../../core/src/types'
 
 interface Props {
   show?: boolean
   value?: Date
-  showLunar?: boolean
+  calendarMode?: CalendarMode
+  defaultCalendar?: CalendarType
+  startYear?: number
   endYear?: number
   color?: string
-  confirmText?: string
-  cancelText?: string
+  locale?: PickerLocale
 }
 
 interface Emits {
@@ -24,11 +26,12 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   value: () => new Date(),
-  showLunar: true,
+  calendarMode: 'switch',
+  defaultCalendar: 'solar',
+  startYear: undefined,
   endYear: () => new Date().getFullYear(),
   color: '#D03F3F',
-  confirmText: '确定',
-  cancelText: '取消'
+  locale: undefined
 })
 
 const emit = defineEmits<Emits>()
@@ -36,19 +39,29 @@ const emit = defineEmits<Emits>()
 const containerRef = ref<HTMLElement>()
 const visible = ref(false)
 const animating = ref(false)
-const isLunar = ref(false)
+const activeCalendar = ref<CalendarType>(getInitialCalendar(props.calendarMode, props.defaultCalendar))
+const labels = computed(() => resolveLocale(props.locale))
 
 let core: DatePickerCore | null = null
+
+function getInitialCalendar(calendarMode: CalendarMode, defaultCalendar: CalendarType): CalendarType {
+  if (calendarMode === 'solar') return 'solar'
+  if (calendarMode === 'lunar') return 'lunar'
+  return defaultCalendar
+}
 
 function initCore() {
   if (!containerRef.value) return
   core?.destroy()
-  isLunar.value = false
+  activeCalendar.value = getInitialCalendar(props.calendarMode, props.defaultCalendar)
   core = new DatePickerCore(containerRef.value, {
     defaultDate: props.value,
-    showLunar: props.showLunar,
+    calendarMode: props.calendarMode,
+    defaultCalendar: props.defaultCalendar,
+    startYear: props.startYear,
     endYear: props.endYear,
     primaryColor: props.color,
+    locale: props.locale,
     onChange: result => emit('change', result)
   })
 }
@@ -74,9 +87,25 @@ watch(
   }
 )
 
+watch(
+  () => props.value,
+  val => {
+    if (val && core) core.setDate(val)
+  }
+)
+
+watch(
+  () => [props.calendarMode, props.defaultCalendar] as const,
+  ([calendarMode, defaultCalendar]) => {
+    const nextCalendar = getInitialCalendar(calendarMode, defaultCalendar)
+    activeCalendar.value = nextCalendar
+    core?.switchCalendarType(nextCalendar)
+  }
+)
+
 function toggleLunar() {
-  isLunar.value = !isLunar.value
-  core?.switchCalendarType(isLunar.value ? 'lunar' : 'solar')
+  activeCalendar.value = activeCalendar.value === 'lunar' ? 'solar' : 'lunar'
+  core?.switchCalendarType(activeCalendar.value)
 }
 
 function handleConfirm() {
@@ -117,14 +146,14 @@ onUnmounted(() => core?.destroy())
             class="ldp-cancel"
             @click="handleCancel"
           >
-            {{ cancelText }}
+            {{ labels.cancel }}
           </div>
           <div />
           <div
             class="ldp-confirm"
             @click="handleConfirm"
           >
-            {{ confirmText }}
+            {{ labels.confirm }}
           </div>
         </div>
 
@@ -134,16 +163,16 @@ onUnmounted(() => core?.destroy())
         />
 
         <div
-          v-if="showLunar"
+          v-if="calendarMode === 'switch'"
           class="ldp-footer"
         >
           <div
             class="ldp-lunar-toggle"
-            :class="{ active: isLunar }"
+            :class="{ active: activeCalendar === 'lunar' }"
             @click="toggleLunar"
           >
             <div class="ldp-lunar-circle" />
-            <span>农历</span>
+            <span>{{ labels.lunar }}</span>
           </div>
         </div>
       </div>
